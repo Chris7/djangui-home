@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>{% block title %}Djangui!{% endblock title %}</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
+    <style>
+        {% block extra_style %}
+        {% endblock extra_style %}
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-default">

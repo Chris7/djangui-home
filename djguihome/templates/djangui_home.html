@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block extra_style %}
+ul.errorlist li {
+list-style-type: none;
+ }
+{% endblock extra_style %}
+
 {% block left_sidebar_content %}
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     {% for app_name, app_dict in djangui_apps.iteritems %}
@@ -30,14 +36,15 @@
 {% endblock %}
 
 {% block center_content %}
-    <form id="djangui-job-form" method="POST" action="">
+    <form id="djangui-job-form" method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="form-group row">
             <label for="job-name">{% trans "Job Name" %}</label>
-            <input class="form-control" id="job-name" type="text" name="job-name" placeholder="{% trans "Job Name" %}"/>
+            <input class="form-control" id="djangui_job_name" type="text" name="djangui_job_name" placeholder="{% trans "Job Name" %}"/>
         </div>
         <div class="form-group row">
             <label for="job-description">{% trans "Job Description" %}</label>
-            <textarea class="form-control" id="job-description" cols="30" rows="5" name="job-description" placeholder="{% trans "Enter job description here..." %}"></textarea>
+            <textarea class="form-control" id="djangui_job_description" cols="30" rows="5" name="djangui_job_description" placeholder="{% trans "Enter job description here..." %}"></textarea>
         </div>
         <div role="tabpanel">
           <!-- Nav tabs -->
@@ -54,7 +61,7 @@
 
         </div>
         <div class="pull-right">
-            <button type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
+            <button id="djangui-form-submit" type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
         </div>
     </form>
 {% endblock center_content %}
@@ -82,16 +89,66 @@
 
 {% block inline_js %}
 <script type="text/javascript">
+
     $(document).ready(function(){
+        function clearErrors(){
+            $('.errorlist').remove();
+            $('.has-error').toggleClass('has-error');
+        }
+
+        function addUlError($field, error){
+            $field.closest('.form-group').addClass('has-error');
+            $field.after('<ul class="errorlist alert alert-danger"><li class="error">'+error+'</li></ul>');
+        }
+
+        function processErrors($form, errors){
+            for (var key in errors){
+                console.log(key);
+                var error = errors[key][0];
+                var $field = $('#'+key);
+                if(!$field.length)
+                    $field = $('[name="'+key+'"]');
+                addUlError($field, error);
+            }
+        }
+
         $('.djangui-script-url').click(function(event){
             event.preventDefault();
+            clearErrors();
             $.get($(this).data('href'), {},function(data){
                 var $jobform = $('#djangui-job-form');
                 $jobform.attr('action', data.action);
                 $jobform.find('#required').html(data.required);
                 $jobform.find('#optional').html(data.optional);
             }, "json");
-        })
-    })
+        });
+
+        $('#djangui-form-submit').click(function(event){
+            event.preventDefault();
+            var $form = $(this).closest('form');
+            var formData = new FormData($form[0]);
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                async: false,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(data){
+                    if(data.valid){
+                        // clear form
+                        $form[0].reset();
+                    }
+                    else{
+                        processErrors($form, data.errors)
+                    }
+                }
+            });
+        });
+
+        // loop for job history updates
+    });
 </script>
 {% endblock inline_js %}

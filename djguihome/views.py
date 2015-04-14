@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 from django.conf import settings
 
 # Create your views here.
+
 class DjanguiHomeView(TemplateView):
     template_name = 'djangui_home.html'
 
