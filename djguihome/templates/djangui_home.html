@@ -103,7 +103,6 @@ list-style-type: none;
 
         function processErrors($form, errors){
             for (var key in errors){
-                console.log(key);
                 var error = errors[key][0];
                 var $field = $('#'+key);
                 if(!$field.length)
@@ -137,6 +136,7 @@ list-style-type: none;
                 contentType: false,
                 processData: false,
                 success: function(data){
+                    clearErrors();
                     if(data.valid){
                         // clear form
                         $form[0].reset();
