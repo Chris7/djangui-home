@@ -15,7 +15,7 @@ setup(
     license='GPLv3',
     description='A simple app to organize djangui apps.',
     long_description=README,
-    url='http://www.example.com/',
+    url='http://www.github.com/chris7/djangui-home',
     author='Chris Mitchell',
     author_email='chris.mit7@gmail.com',
     classifiers=[

@@ -72,8 +72,9 @@ list-style-type: none;
     <h3 class="panel-title">{% trans "Job History" %}</h3>
   </div>
   <div class="panel-body">
-    <table class="table">
+    <table id="djangui-job-table" class="table hover stripe">
     <thead>
+        <th>{% trans "Job Id" %}</th>
         <th>{% trans "Job Name" %}</th>
         <th>{% trans "Job Status" %}</th>
         <th>{% trans "Submission Time" %}</th>
@@ -148,7 +149,37 @@ list-style-type: none;
             });
         });
 
+        var djangui_dt = $('#djangui-job-table').dataTable({
+            "columnDefs": [
+                { "visible": false,  "targets": [ 0 ] }
+            ]
+        });
+        var djangui_dt_api = djangui_dt.api();
+        $('#djangui-job-table_wrapper').addClass('col-md-12');
+
+        var dt_jobs = {};
+
         // loop for job history updates
+        var tid = setInterval(celeryRefresh, 10000);
+        function celeryRefresh() {
+            $.get("{% url "celery_results" %}", function(data){
+                for(var i=0;i<data.length;i++){
+                    if(!dt_jobs[data[i].job_id] || dt_jobs[data[i].job_id] != data[i].job_status){
+                        if(dt_jobs[data[i].job_id] && dt_jobs[data[i].job_id] != data[i].job_status){
+                            var indexes = djangui_dt_api.rows().eq( 0 ).filter( function (rowIdx) {
+                                return djangui_dt_api.cell( rowIdx, 0 ).data() === data[i].job_id ? true : false;
+                            } );
+                            djangui_dt.fnUpdate(data[i].job_status, indexes[0], 2);
+                        }
+                        else
+                            djangui_dt_api.row.add([data[i].job_id, data[i].job_name, data[i].job_status, data[i].job_submitted]);
+                        dt_jobs[data[i].job_id] = data[i].job_status;
+                    }
+                }
+                djangui_dt_api.draw();
+            }, "json");
+        }
+        celeryRefresh();
     });
 </script>
 {% endblock inline_js %}
