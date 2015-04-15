@@ -1,0 +1,42 @@
+{% extends "djangui_home.html" %}
+{% load i18n %}
+{% block left_sidebar %}{% endblock left_sidebar %}
+{% block center %}
+    <div class="col-md-9">
+        <h1>{{ task_info.job_name }}</h1>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{% trans "Job Output" %}</h3>
+            </div>
+            <div class="panel-body">
+                <code>{{ task_info.stdout|linebreaks }}</code>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{% trans "Job Errors" %}</h3>
+            </div>
+            <div class="panel-body">
+                <code>{{ task_info.stderr|linebreaks }}</code>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{% trans "Files Used and Created" %}</h3>
+            </div>
+            <div class="panel-body">
+                <dl class="dl-horizontal">
+                {% for field_name, file in task_info.files.iteritems %}
+                    <dt>{{ field_name }}</dt>
+                    <dd><a href="{{ file.url }}">{{ file.name }}</a></dd>
+                {% endfor %}
+                </dl>
+            </div>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-primary">{% trans "Clone Job" %}</button>
+            <button class="btn btn-warning">{% trans "Resubmit Job" %}</button>
+            <button class="btn btn-danger">{% trans "Delete Job" %}</button>
+        </div>
+    </div>
+{% endblock center %}

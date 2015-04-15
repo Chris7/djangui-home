@@ -172,7 +172,7 @@ list-style-type: none;
                             djangui_dt.fnUpdate(data[i].job_status, indexes[0], 2);
                         }
                         else
-                            djangui_dt_api.row.add([data[i].job_id, data[i].job_name, data[i].job_status, data[i].job_submitted]);
+                            djangui_dt_api.row.add([data[i].job_id, '<a href="'+data[i].job_url+'">'+data[i].job_name+'</a>', data[i].job_status, data[i].job_submitted]);
                         dt_jobs[data[i].job_id] = data[i].job_status;
                     }
                 }
