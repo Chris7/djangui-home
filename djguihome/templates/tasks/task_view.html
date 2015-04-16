@@ -2,9 +2,18 @@
 {% load i18n %}
 {% block left_sidebar %}{% endblock left_sidebar %}
 {% block center %}
+    {% include "modals/resubmit_modal.html" %}
     <div class="col-md-9">
         <h1>{{ task_info.job_name }}</h1>
         <h1><small>{{ task_info.status }}</small></h1>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">{% trans "Command Sent" %}</h4>
+            </div>
+            <div class="panel-body">
+                <code>{{ task_info.job_command }}</code>
+            </div>
+        </div>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">{% trans "Job Output" %}</h3>
@@ -35,9 +44,47 @@
             </div>
         </div>
         <div class="pull-right">
-            <button class="btn btn-primary">{% trans "Clone Job" %}</button>
-            <button class="btn btn-warning">{% trans "Resubmit Job" %}</button>
-            <button class="btn btn-danger">{% trans "Delete Job" %}</button>
+            <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
+                {% csrf_token %}
+                <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
+                <button class="btn btn-primary" name="celery-command" value="clone" type="submit">{% trans "Clone Job" %}</button>
+                <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">{% trans "Resubmit Job" %}</button>
+                <button class="btn btn-danger" name="celery-command" value="delete" type="submit">{% trans "Delete Job" %}</button>
+            </form>
         </div>
     </div>
 {% endblock center %}
+
+{% block inline_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function(){
+        $('#djangui-task-submit button').click(function(event){
+            event.preventDefault();
+            var $form = $(this).closest('form');
+            var formData = $form.serializeArray();
+            formData.push({'name': 'celery-command', 'value': $(this).attr('value')});
+            console.log($form.attr('action'));
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(data){
+                    if (data.valid){
+                        if(data.redirect){
+                            window.location.replace(data.redirect);
+                        }
+                        else{
+                            // the only way we end here is from a resubmission at the moment
+                            $('#new-task-url').attr('href', data.extra.task_url);
+                            $('#myModal').modal();
+                        }
+                    }
+                }
+            });
+            return true;
+        });
+    });
+</script>
+{% endblock %}

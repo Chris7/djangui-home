@@ -23,6 +23,12 @@
             margin: auto;
           height:100%;
         }
+
+        @media(max-width: 1200px){
+            .djangui-affix{
+                position: relative !important;
+            }
+        }
         {% block extra_style %}
         {% endblock extra_style %}
     </style>
@@ -72,9 +78,12 @@
     {% endblock left_sidebar %}
 
     {% block center %}
+
         <div class="col-md-6">
-            {% block center_content %}
-            {% endblock center_content %}
+{#                <div{% block center_content_affix %} class="djangui-affix col-md-5" data-spy="affix"{% endblock center_content_affix %}>#}
+                {% block center_content %}
+                {% endblock center_content %}
+{#                </div>#}
         </div>
     {% endblock center %}
 
