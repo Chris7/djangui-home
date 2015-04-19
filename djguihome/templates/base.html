@@ -71,7 +71,7 @@
     </nav>
 
     {% block left_sidebar %}
-        <div class="col-md-3">
+        <div class="col-md-3 col-xs-6">
             {% block left_sidebar_content %}
             {% endblock left_sidebar_content %}
         </div>
@@ -79,7 +79,7 @@
 
     {% block center %}
 
-        <div class="col-md-6">
+        <div class="col-md-6 col-xs-6">
 {#                <div{% block center_content_affix %} class="djangui-affix col-md-5" data-spy="affix"{% endblock center_content_affix %}>#}
                 {% block center_content %}
                 {% endblock center_content %}
@@ -88,7 +88,7 @@
     {% endblock center %}
 
     {% block right_sidebar %}
-        <div class="col-md-3">
+        <div class="col-md-3 col-xs-12">
         {% block right_sidebar_content %}
         {% endblock right_sidebar_content %}
         </div>
