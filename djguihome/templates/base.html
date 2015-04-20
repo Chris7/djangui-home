@@ -79,7 +79,7 @@
 
     {% block center %}
 
-        <div class="col-md-6 col-xs-6">
+        <div class="{% block center_content_class %}col-md-6 col-xs-6{% endblock center_content_class %}">
 {#                <div{% block center_content_affix %} class="djangui-affix col-md-5" data-spy="affix"{% endblock center_content_affix %}>#}
                 {% block center_content %}
                 {% endblock center_content %}

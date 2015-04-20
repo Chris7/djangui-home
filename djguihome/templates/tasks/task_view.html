@@ -1,11 +1,29 @@
 {% extends "djangui_home.html" %}
 {% load i18n %}
 {% block left_sidebar %}{% endblock left_sidebar %}
-{% block center %}
-    {% include "modals/resubmit_modal.html" %}
-    <div class="col-md-9">
+{% block center_content_class %}col-md-9 col-xs-12{% endblock center_content_class %}
+{% block center_content %}
+{% include "modals/resubmit_modal.html" %}
+<div role="tabpanel">
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#task-report" aria-controls="task-report" role="tab" data-toggle="tab">{% trans "Job Summary" %}</a></li>
+    <li role="presentation"><a href="#task-output" aria-controls="task-output" role="tab" data-toggle="tab">{% trans "Files and Output" %}</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="task-report">
         <h1>{{ task_info.job_name }}</h1>
-        <h1><small>{{ task_info.status }}</small></h1>
+        <h1><small>{{ task_info.status }}</small>
+        {% if task_info.status == 'PENDING' %}
+            <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
+                {% csrf_token %}
+                <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
+                <button class="btn btn-primary btn-danger" name="celery-command" value="stop" type="submit">{% trans "Stop Job" %}</button>
+            </form>
+        {% endif %}</h1>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">{% trans "Command Sent" %}</h4>
@@ -30,30 +48,78 @@
                 <code>{{ task_info.stderr|linebreaks }}</code>
             </div>
         </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">{% trans "Files Used and Created" %}</h3>
-            </div>
-            <div class="panel-body">
+    </div>
+    <div role="tabpanel" class="tab-pane" id="task-output">
+        <div role="tabpanel">
+
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#task-output-all" aria-controls="task-output-all" role="tab" data-toggle="tab">{% trans "All Files" %}</a></li>
+            {% for output_group, output in task_info.file_groups.iteritems %}
+                <li role="presentation"><a href="#task-output-{{ output_group }}" aria-controls="task-output-{{ output_group }}" role="tab" data-toggle="tab">{{ output_group|title }}</a></li>
+            {% endfor %}
+          </ul>
+
+          <div class="tab-content">
+
+            <div role="tabpanel" class="tab-pane active" id="task-output-all">
                 <dl class="dl-horizontal">
-                {% for field_name, file in task_info.files.iteritems %}
+                {% for field_name, file in task_info.all_files.iteritems %}
                     <dt>{{ field_name }}</dt>
                     <dd><a href="{{ file.url }}">{{ file.name }}</a></dd>
                 {% endfor %}
                 </dl>
             </div>
+            {% for output_group, output_files in task_info.file_groups.iteritems %}
+                <div role="tabpanel" class="tab-pane" id="task-output-{{ output_group }}">
+                    {% for output_file_name, output_file_content in output_files.iteritems %}
+                    <div class="panel panel-default">
+                      <!-- Default panel contents -->
+                      <div class="panel-heading"><a href="{{ output_file_content.model.url }}">{{ output_file_name }}</a></div>
+
+                      <!-- Table -->
+                      <div class="table-responsive">
+                          <table class="table">
+                            {% for entry in output_file_content.preview %}
+                                {% if forloop.first %}
+                                    <thead>
+                                        {% for item in entry %}
+                                            <th>{{ item }}</th>
+                                        {% endfor %}
+                                    </thead>
+                                    <tbody>
+                                {% else %}
+                                    <tr>
+                                    {% for item in entry %}
+                                        <td>{{ item }}</td>
+                                    {% endfor %}
+                                    </tr>
+                                {% endif %}
+                                {% if forloop.last %}
+                                    </tbody>
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                      </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+          </div>
         </div>
-        <div class="pull-right">
-            <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
-                {% csrf_token %}
-                <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
-                <button class="btn btn-primary" name="celery-command" value="clone" type="submit">{% trans "Clone Job" %}</button>
-                <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">{% trans "Resubmit Job" %}</button>
-                <button class="btn btn-danger" name="celery-command" value="delete" type="submit">{% trans "Delete Job" %}</button>
-            </form>
         </div>
     </div>
-{% endblock center %}
+</div>
+<div class="pull-right">
+    <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
+        {% csrf_token %}
+        <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
+        <button class="btn btn-primary" name="celery-command" value="clone" type="submit">{% trans "Clone Job" %}</button>
+        <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">{% trans "Resubmit Job" %}</button>
+        <button class="btn btn-danger" name="celery-command" value="delete" type="submit">{% trans "Delete Job" %}</button>
+    </form>
+</div>
+{% endblock center_content %}
 
 {% block inline_js %}
 {{ block.super }}
