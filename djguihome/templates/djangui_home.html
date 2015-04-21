@@ -181,12 +181,15 @@ list-style-type: none;
         var djangui_dt = $('#djangui-job-table').dataTable({
             "columnDefs": [
                 { "visible": false,  "targets": [ 0 ] }
-            ]
+            ],
+            "order": [[ 3, "desc" ]]
         });
         var djangui_dt_api = djangui_dt.api();
         $('#djangui-job-table_wrapper').addClass('col-md-12');
 
         var dt_jobs = {};
+
+        var task_reloaded = false;
 
         // loop for job history updates
         var tid = setInterval(celeryRefresh, 10000);
@@ -199,8 +202,10 @@ list-style-type: none;
                                 return djangui_dt_api.cell( rowIdx, 0 ).data() === data[i].job_id ? true : false;
                             } );
                             if(window.location.href.indexOf(data[i].job_id) != -1){
-                                // job update while on page
-                                location.reload();
+                                // job update while on task page, stdout/etc will be updated, so just reload the page
+                                if(!task_reloaded)
+                                    location.reload();
+                                task_reloaded = true;
                                 return;
                             }
                             djangui_dt.fnUpdate(data[i].job_status, indexes[0], 2);
