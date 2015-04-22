@@ -10,7 +10,7 @@ list-style-type: none;
 {% block left_sidebar_content %}
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     {% for app_name, app_dict in djangui_apps.iteritems %}
-      <div class="panel panel-default">
+      <div class="panel panel-primary">
         <div class="panel-heading" role="tab" id="{{ app_name }}">
           <h4 class="panel-title">
             <a data-toggle="collapse" data-parent="#accordion" href="#{{ app_name }}_accordion" aria-expanded="true" aria-controls="{{ app_name }}_accordion">
@@ -20,14 +20,14 @@ list-style-type: none;
         </div>
         <div id="{{ app_name }}_accordion" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="{{ app_name }}">
             <div class="panel-body">
-            {% for script_info in app_dict.scripts %}
-                <div class="panel panel-default">
-                  <a href="#" data-href="{{ script_info.url }}" class="djangui-script-url"><div class="panel-heading">{{ script_info.title }}</div></a>
-                  <div class="panel-body">
-                    {{ script_info.description }}
-                  </div>
+                <div class="list-group">
+                {% for script_info in app_dict.scripts %}
+                  <a href="#" data-href="{{ script_info.url }}" class="list-group-item djangui-script-url">
+                    <h4 class="list-group-item-heading djangui-script-title">{{ script_info.title }}</h4>
+                    <p class="list-group-item-text djangui-script-description">{{ script_info.description }}</p>
+                  </a>
+                {% endfor %}
                 </div>
-            {% endfor %}
             </div>
         </div>
       </div>
@@ -36,6 +36,10 @@ list-style-type: none;
 {% endblock %}
 
 {% block center_content %}
+    <div class="page-header">
+        <h3 id="djangui-script-title"></h3>
+        <p id="djangui-script-description"></p>
+    </div>
     <form id="djangui-job-form" method="POST" action="" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group row">
@@ -114,6 +118,12 @@ list-style-type: none;
         $('.djangui-script-url').click(function(event){
             event.preventDefault();
             clearErrors();
+            // set the details of what script we clicked
+            var title = $(this).find('.djangui-script-title').text();
+            var desc = $(this).find('.djangui-script-description').text();
+            var $title = $('#djangui-script-title');
+            $title.text(title);
+            $('#djangui-script-description').text(desc);
             $('.djangui-dynamic-tabs').remove();
             $.get($(this).data('href'), {},function(data){
                 var $jobform = $('#djangui-job-form');
@@ -129,6 +139,7 @@ list-style-type: none;
                 var $first = $('a[href="#djangui_dynamic_tab0"]');
                 if($first.length)
                     $first.trigger('click');
+                window.scrollTo(0, $title.parent('div').parent('div').offset().top);
 {#                bindPanels();#}
 
             }, "json");
