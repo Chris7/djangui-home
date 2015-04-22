@@ -2,9 +2,7 @@
 {% load i18n %}
 
 {% block extra_style %}
-ul.errorlist li {
-list-style-type: none;
- }
+
 {% endblock extra_style %}
 
 {% block left_sidebar_content %}
@@ -37,7 +35,7 @@ list-style-type: none;
 
 {% block center_content %}
     <div class="page-header">
-        <h3 id="djangui-script-title"></h3>
+        <em><h3 id="djangui-script-title"></h3></em>
         <p id="djangui-script-description"></p>
     </div>
     <form id="djangui-job-form" method="POST" action="" enctype="multipart/form-data">
@@ -102,7 +100,7 @@ list-style-type: none;
 
         function addUlError($field, error){
             $field.closest('.form-group').addClass('has-error');
-            $field.after('<ul class="errorlist alert alert-danger"><li class="error">'+error+'</li></ul>');
+            $field.after('<ul class="errorlist list-unstyled alert alert-danger"><li class="error">'+error+'</li></ul>');
         }
 
         function processErrors($form, errors){
@@ -139,7 +137,7 @@ list-style-type: none;
                 var $first = $('a[href="#djangui_dynamic_tab0"]');
                 if($first.length)
                     $first.trigger('click');
-                window.scrollTo(0, $title.parent('div').parent('div').offset().top);
+                window.scrollTo(0, $title.closest('.center-div').offset().top);
 {#                bindPanels();#}
 
             }, "json");

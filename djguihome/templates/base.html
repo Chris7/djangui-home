@@ -26,6 +26,11 @@
           height:100%;
         }
 
+        .djangui-affix{
+         max-height: 100%;
+         overflow-y: auto;
+        }
+
         @media(max-width: 1200px){
             .djangui-affix{
                 position: relative !important;
@@ -81,8 +86,8 @@
 
     {% block center %}
 
-        <div class="{% block center_content_class %}col-md-6 col-xs-6{% endblock center_content_class %}">
-{#                <div{% block center_content_affix %} class="djangui-affix col-md-5" data-spy="affix"{% endblock center_content_affix %}>#}
+        <div class="center-div {% block center_content_class %}col-md-6 col-xs-6{% endblock center_content_class %}">
+{#                <div{% block center_content_affix %} class="djangui-affix col-md-5" data-spy="affix" data-offset-bottom="0"{% endblock center_content_affix %}>#}
                 {% block center_content %}
                 {% endblock center_content %}
 {#                </div>#}
