@@ -24,7 +24,6 @@ class DjanguiHomeConfig(AppConfig):
                         script_name = [i for i in model._meta.fields if i.name == 'djangui_script_name'][0].default
                         # the script name is normally a filepath, so fix this
                         script_name = os.path.splitext(os.path.split(script_name)[1])[0]
-                        print model, script_name
                         # import pdb; pdb.set_trace();
                         scripts.append({
                             'description': model.djangui_model_description,
