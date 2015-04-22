@@ -143,6 +143,24 @@
             }, "json");
         });
 
+        {% if clone_job %}
+            $.get('{{ clone_job.url }}', {task_id: '{{ clone_job.task_id }}'},function(data){
+                var $jobform = $('#djangui-job-form');
+                $jobform.attr('action', data.action);
+                var $djangui_tabs = $jobform.find('#djangui-script-tabs');
+                var $djangui_content = $jobform.find('#djangui-script-content');
+                for(var i=0;i<data.groups.length;i++){
+                    $djangui_tabs.append('<li class="djangui-dynamic-tabs" role="presentation"><a href="#djangui_dynamic_tab'+i+'" aria-controls="profile" role="tab" data-toggle="tab">'+data.groups[i].group_name+'</a></li>');
+                    var new_panel = $('<div role="tabpanel" class="tab-pane djangui-dynamic-tabs" id="djangui_dynamic_tab'+i+'"></div>');
+                    new_panel.html(data.groups[i].form);
+                    $djangui_content.append(new_panel);
+                }
+                var $first = $('a[href="#djangui_dynamic_tab0"]');
+                if($first.length)
+                    $first.trigger('click');
+            }, "json");
+        {% endif %}
+
 {#        function bindPanels(){#}
 {#             $('#djangui-script-tabs a[data-toggle="tab"]')#}
 {#            .on('show.bs.tab', function(e) {#}

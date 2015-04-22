@@ -3,4 +3,5 @@ from .views import DjanguiHomeView
 
 urlpatterns = [
     url(r'^$', DjanguiHomeView.as_view(), name='djangui_home'),
+    url(r'^$', DjanguiHomeView.as_view(), name='djangui_task_launcher'),
 ]
