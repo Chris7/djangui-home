@@ -16,7 +16,7 @@ class DjanguiHomeConfig(AppConfig):
         installed_apps = dict([(app, import_module(app)) for app in settings.INSTALLED_APPS])
         for app_name, app in installed_apps.iteritems():
             if getattr(app, 'DJANGUI_APP', False):
-                djangui_apps[app_name] = {'url': reverse_lazy('{0}_home'.format(app_name)), 'app': app}
+                djangui_apps[app_name] = {'url': reverse_lazy('{0}_home'.format(app_name), kwargs={'app_name': app_name}), 'app': app}
                 config = apps.get_app_config(app_name)
                 scripts = []
                 for model in config.get_models():
