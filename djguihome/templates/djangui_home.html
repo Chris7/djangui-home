@@ -60,6 +60,7 @@
           </div>
 
         </div>
+        <input name="djangui_clone_task_id" id="djangui_clone_task_id" type="hidden">
         <div class="pull-right">
             <button id="djangui-form-submit" type="submit" class="btn btn-primary">{% trans "Submit" %}</button>
         </div>
@@ -71,8 +72,8 @@
   <div class="panel-heading">
     <h3 class="panel-title">{% trans "Job History" %}</h3>
   </div>
-  <div class="panel-body">
-    <table id="djangui-job-table" class="table hover stripe">
+  <div class="panel-body table-responsive">
+    <table id="djangui-job-table" class="table hover stripe col-md-3 col-xs-12">
     <thead>
         <th>{% trans "Job Id" %}</th>
         <th>{% trans "Job Name" %}</th>
@@ -93,6 +94,8 @@
 <script type="text/javascript">
 
     $(document).ready(function(){
+        var filesUploaded = {};
+
         function clearErrors(){
             $('.errorlist').remove();
             $('.has-error').toggleClass('has-error');
@@ -115,6 +118,7 @@
 
         $('.djangui-script-url').click(function(event){
             event.preventDefault();
+            filesUploaded = {};
             clearErrors();
             // set the details of what script we clicked
             var title = $(this).find('.djangui-script-title').text();
@@ -146,6 +150,7 @@
         {% if clone_job %}
             $.get('{{ clone_job.url }}', {task_id: '{{ clone_job.task_id }}'},function(data){
                 var $jobform = $('#djangui-job-form');
+                $jobform.find('#djangui_clone_task_id').val("{{ clone_job.task_id }}");
                 $jobform.attr('action', data.action);
                 var $djangui_tabs = $jobform.find('#djangui-script-tabs');
                 var $djangui_content = $jobform.find('#djangui-script-content');
@@ -161,29 +166,27 @@
             }, "json");
         {% endif %}
 
-{#        function bindPanels(){#}
-{#             $('#djangui-script-tabs a[data-toggle="tab"]')#}
-{#            .on('show.bs.tab', function(e) {#}
-{#                var window_height = $(window).height()-$('nav.navbar').height();#}
-{#                var script_height = $(e.target.getAttribute('href')).height()+$(e.target.getAttribute('href')).offset().top;#}
-{#                if (script_height > window_height){#}
-{#                    $("div.djangui-affix")#}
-{#                    .removeClass("djangui-affix affix affix-top affix-bottom").removeData('bs.affix');#}
-{#                }#}
-{#                else{#}
-{#                $("div.djangui-affix").addClass('djangui-affix affix affix-top affix-bottom').attr('data-spy', 'affix');#}
-{##}
-{#                }#}
-{#            });#}
-{#        }#}
+        // Track file changes
 
+        $("input:file").change(function (){
+           var fileName = $(this).val();
+           filesUploaded[$(this).attr('name')] = fileName;
+         });
 
 
 
         $('#djangui-form-submit').click(function(event){
             event.preventDefault();
             var $form = $(this).closest('form');
+            // if we are cloning a job, we need to specify the fields as the files because the file type input
+            // will be blank
             var formData = new FormData($form[0]);
+            $('input[type="file"]').each(function(index, value){
+                if(filesUploaded[$(this).attr('name')] === undefined){
+                    // the user has not selected a file to replace this one
+                    formData.append($(this).attr('name'), $(this).siblings('a').text());
+                }
+            });
             $.ajax({
                 url: $form.attr('action'),
                 type: 'POST',

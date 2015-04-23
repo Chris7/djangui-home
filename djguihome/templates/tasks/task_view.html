@@ -9,30 +9,83 @@
     {{ extra_css.super }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/3.3.0/ekko-lightbox.min.css"/>
 {% endblock extra_css %}
+{% block extra_style %}
+    {{ extra_style.super }}
+    #djangui-task-submit {
+      float: left;
+      margin-left: 3px;
+    }
+{% endblock extra_style %}
 {% block left_sidebar %}{% endblock left_sidebar %}
 {% block center_content_class %}col-md-9 col-xs-12{% endblock center_content_class %}
 {% block center_content %}
 {% include "modals/resubmit_modal.html" %}
+<h1 class="text-center">{{ task_info.job_name }}</h1>
 <div role="tabpanel">
 
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#task-report" aria-controls="task-report" role="tab" data-toggle="tab">{% trans "Job Summary" %}</a></li>
     <li role="presentation"><a href="#task-output" aria-controls="task-output" role="tab" data-toggle="tab">{% trans "Files and Output" %}</a></li>
-  </ul>
+    <div class="pull-right">
+        <div class="btn-group">
+        {% if task_info.archives %}
 
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="task-report">
-        <h1>{{ task_info.job_name }}</h1>
-        <h1><small>{{ task_info.status }}</small>
-        {% if task_info.status == 'PENDING' %}
+            <a href="{{ task_info.archives.0.url }}" role="button" class="btn btn-primary">
+            <span class="glyphicon glyphicon-download" aria-hidden="true"></span> {% trans "Download All" %}
+            </a>
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                {% for archive in task_info.archives %}
+                    <li><a href="{{ archive.url }}">{% if archive.url|endswith:"zip" %}{% trans "As Zip" %}{% else %}{% trans "As tar.gz" %}{% endif %}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
             <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
                 {% csrf_token %}
                 <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
-                <button class="btn btn-primary btn-danger" name="celery-command" value="stop" type="submit">{% trans "Stop Job" %}</button>
+                {% if task_info.status == 'PENDING' %}
+                <button class="btn btn-primary btn-danger" name="celery-command" value="stop" type="submit">
+                    <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> {% trans "Stop Job" %}
+                </button>
+                {% endif %}
+                <button class="btn btn-primary" name="celery-command" value="clone" type="submit">
+                    <span class="glyphicon glyphicon-copy" aria-hidden="true"></span> {% trans "Clone Job" %}
+                </button>
+                <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">
+                    <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> {% trans "Resubmit Job" %}
+                </button>
+                <button class="btn btn-danger" name="celery-command" value="delete" type="submit">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> {% trans "Delete Job" %}
+                </button>
+
             </form>
-        {% endif %}</h1>
+        </div>
+    </div>
+  </ul>
+
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+<br>
+    <div role="tabpanel" class="tab-pane active" id="task-report">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">{% trans "Job Information" %}</h4>
+            </div>
+            <div class="panel-body">
+                <dl class="dl-horizontal">
+                  <dt>{% trans "Job Status" %}</dt>
+                  <dd>{{ task_info.status }}</dd>
+                  <dt>{% trans "Job Description" %}</dt>
+                  <dd>{{ task_info.job_description }}</dd>
+                </dl>
+            </div>
+        </div>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">{% trans "Command Sent" %}</h4>
@@ -60,20 +113,6 @@
     </div>
     <div role="tabpanel" class="tab-pane" id="task-output">
         <div role="tabpanel">
-            {% if task_info.archives %}
-            <div class="btn-group">
-            <a href="{{ task_info.archives.0.url }}" role="button" class="btn btn-primary">{% trans "Download All" %}</a>
-            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-                {% for archive in task_info.archives %}
-                    <li><a href="{{ archive.url }}">{% if archive.url|endswith:"zip" %}{% trans "As Zip" %}{% else %}{% trans "As tar.gz" %}{% endif %}</a></li>
-                {% endfor %}
-            </ul>
-                </div>
-            {% endif %}
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="active"><a href="#task-output-all" aria-controls="task-output-all" role="tab" data-toggle="tab">{% trans "All Files" %}</a></li>
@@ -176,15 +215,6 @@
         </div>
     </div>
 </div>
-<div class="pull-right">
-    <form action="{% url 'celery_task_command' %}" id="djangui-task-submit">
-        {% csrf_token %}
-        <input name="task-id" value="{{ task_info.job_id }}" type="hidden">
-        <button class="btn btn-primary" name="celery-command" value="clone" type="submit">{% trans "Clone Job" %}</button>
-        <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">{% trans "Resubmit Job" %}</button>
-        <button class="btn btn-danger" name="celery-command" value="delete" type="submit">{% trans "Delete Job" %}</button>
-    </form>
-</div>
 {% endblock center_content %}
 
 {% block inline_js %}
@@ -196,7 +226,6 @@
             var $form = $(this).closest('form');
             var formData = $form.serializeArray();
             formData.push({'name': 'celery-command', 'value': $(this).attr('value')});
-            console.log($form.attr('action'));
             $.ajax({
                 url: $form.attr('action'),
                 type: 'POST',
