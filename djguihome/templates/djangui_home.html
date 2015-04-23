@@ -148,6 +148,12 @@
         });
 
         {% if clone_job %}
+            // Track file changes
+            $("input:file").change(function (){
+               var fileName = $(this).val();
+               filesUploaded[$(this).attr('name')] = fileName;
+             });
+
             $.get('{{ clone_job.url }}', {task_id: '{{ clone_job.task_id }}'},function(data){
                 var $jobform = $('#djangui-job-form');
                 $jobform.find('#djangui_clone_task_id').val("{{ clone_job.task_id }}");
@@ -166,12 +172,7 @@
             }, "json");
         {% endif %}
 
-        // Track file changes
 
-        $("input:file").change(function (){
-           var fileName = $(this).val();
-           filesUploaded[$(this).attr('name')] = fileName;
-         });
 
 
 
