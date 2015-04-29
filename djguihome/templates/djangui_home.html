@@ -7,22 +7,23 @@
 
 {% block left_sidebar_content %}
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-    {% for app_name, app_dict in djangui_apps.iteritems %}
+    {% for group_id, group in djangui_apps.iteritems %}
       <div class="panel panel-primary">
-        <div class="panel-heading" role="tab" id="{{ app_name }}">
+        <div class="panel-heading" role="tab" id="{{ group_id }}">
           <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#{{ app_name }}_accordion" aria-expanded="true" aria-controls="{{ app_name }}_accordion">
-              {{ app_name }}
+            <a data-toggle="collapse" data-parent="#accordion" href="#{{ group_id }}_accordion" aria-expanded="true" aria-controls="{{ group_id }}_accordion">
+              {{ group.group.group_name }}
             </a>
           </h4>
         </div>
-        <div id="{{ app_name }}_accordion" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="{{ app_name }}">
+        <div id="{{ app_name }}_accordion" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="{{ group_id }}">
             <div class="panel-body">
+                <p><em>{{ group.group.group_description }}</em></p>
                 <div class="list-group">
-                {% for script_info in app_dict.scripts %}
-                  <a href="#" data-href="{{ script_info.url }}" class="list-group-item djangui-script-url">
-                    <h4 class="list-group-item-heading djangui-script-title">{{ script_info.title }}</h4>
-                    <p class="list-group-item-text djangui-script-description">{{ script_info.description }}</p>
+                {% for script in group.scripts %}
+                  <a href="#" data-href="{{ script.get_url }}" class="list-group-item djangui-script-url">
+                    <h4 class="list-group-item-heading djangui-script-title">{{ script.script_name }}</h4>
+                    <p class="list-group-item-text djangui-script-description">{{ script.script_description }}</p>
                   </a>
                 {% endfor %}
                 </div>
@@ -42,11 +43,11 @@
         {% csrf_token %}
         <div class="form-group row">
             <label for="job-name">{% trans "Job Name" %}</label>
-            <input class="form-control" id="djangui_job_name" type="text" name="djangui_job_name" placeholder="{% trans "Job Name" %}"/>
+            <input class="form-control" id="djangui_job_name" type="text" name="job_name" placeholder="{% trans "Job Name" %}"/>
         </div>
         <div class="form-group row">
             <label for="job-description">{% trans "Job Description" %}</label>
-            <textarea class="form-control" id="djangui_job_description" cols="30" rows="5" name="djangui_job_description" placeholder="{% trans "Enter job description here..." %}"></textarea>
+            <textarea class="form-control" id="djangui_job_description" cols="30" rows="5" name="job_description" placeholder="{% trans "Enter job description here..." %}"></textarea>
         </div>
         <div role="tabpanel">
           <!-- Nav tabs -->
@@ -224,7 +225,7 @@
         var task_reloaded = false;
 
         // loop for job history updates
-        var tid = setInterval(celeryRefresh, 10000);
+{#        var tid = setInterval(celeryRefresh, 10000);#}
         function celeryRefresh() {
             $.get("{% url "celery_results" %}", function(data){
                 for(var i=0;i<data.length;i++){
